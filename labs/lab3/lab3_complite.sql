@@ -50,10 +50,53 @@ OFFSET 1 LIMIT 1;
 
 -- 13.  SELECT the first and last names of students registered in the course with the fewest 
 -- credits. 
+SELECT first_name, last_name FROM students
+JOIN registration ON students.student_id = registration.student_id
+JOIN courses ON registration.course_id = courses.course_id
+WHERE courses.course_id = (
+    SELECT MIN(credits)
+    FROM courses
+    );
+
 -- 14.  SELECT the first and last names of all students from Almaty. 
+SELECT first_name, last_name FROM students
+WHERE city = 'Almaty';
 -- 15.  SELECT all courses with more than 3 credits, sorted by increasing credits and 
 -- decreasing course ID. 
+SELECT * FROM courses
+WHERE credits > 3
+ORDER BY credits ASC, course_id DESC;
+
 -- 16.  Decrease the number of credits for the course with the fewest credits by 1. 
+UPDATE courses
+SET credits = credits - 1
+WHERE credits = (
+    SELECT MIN(credits)
+    FROM courses
+    )
+-- RETURNING *;
 -- 17.  Reassign all students from the "MATH201" course to the "CS101" course. 
+UPDATE registration
+SET course_id = (
+    SELECT course_id
+    FROM courses
+    WHERE course_code = 'CS101'
+    )
+WHERE course_id = (
+    SELECT course_id
+    FROM courses
+    WHERE course_code = 'MATH201'
+    )
+-- RETURNING *;
 -- 18.  Delete from the table all students registered for the "CS101" course. 
+DELETE FROM students
+WHERE student_id IN(
+    SELECT student_id FROM registration
+    JOIN courses ON registration.course_id = courses.course_id
+    WHERE courses.course_code = 'CS101'
+    );
+
+
 -- 19.  Delete all students from the database.
+DELETE FROM students
+RETURNING *;
