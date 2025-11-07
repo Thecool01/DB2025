@@ -140,6 +140,7 @@ WHERE professors.department = 'Computer Science';
 -- 'S'. 
 
 SELECT professors.last_name,
+       
        SUM(DISTINCT courses.credits) AS total_credits
        FROM courses
 JOIN enrollments ON courses.course_id = enrollments.course_id

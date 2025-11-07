@@ -92,13 +92,16 @@ WHERE librarians.city = 'Paris' AND borrow_date BETWEEN '2021-01-01' AND '2023-1
 -- 9. Select all borrowings where the `borrow_date` is after '2023-01-01'. 
 SELECT * FROM borrowings
 WHERE borrow_date > '2023-01-01';
+
 -- 10. Select the total number of books borrowed by each member. 
 SELECT member_name, COUNT(*) AS number_of_books FROM members 
 JOIN borrowings ON members.member_id = borrowings.member_id 
 GROUP BY member_name;
+
 -- 11. Select all members who have a membership level of 3. 
 SELECT * FROM members
 WHERE membership_level = 3;
+
 -- 12. Select the librarian with the highest commission. 
 SELECT name FROM librarians
 WHERE commission IN(
