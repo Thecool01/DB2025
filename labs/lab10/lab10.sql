@@ -110,24 +110,48 @@ COMMIT;
         • Expected Outcome: No changes are made to the Rentals or 
         Movies tables due to the rollback
 
-BEGIN;
-
-    SELECT available_copies INTO available FROM movies
+DO $$
+DECLARE
+    available INT;
+    requested INT := 10;
+BEGIN
+    -- Получаем доступные копии с блокировкой
+    SELECT available_copies
+    INTO available
+    FROM Movies
     WHERE movie_id = 3
     FOR UPDATE;
 
+    -- Проверяем, хватает ли копий
+    IF available >= requested THEN
+
+        -- Если копий достаточно → выполняем вставку и обновление
         INSERT INTO Rentals (rental_id, movie_id, customer_id, rental_date, quantity)
         VALUES (
-                (SELECT COALESCE(MAX(rental_id), 0) + 1 FROM rentals),
-                3, 202, CURRENT_DATE, 10
-               );
+            (SELECT COALESCE(MAX(rental_id), 0) + 1 FROM Rentals),
+            3,
+            202,
+            CURRENT_DATE,
+            requested
+        );
 
-        -- Updating the Movies table
-        UPDATE movies
-        SET available_copies = available_copies - 10
+        UPDATE Movies
+        SET available_copies = available_copies - requested
         WHERE movie_id = 3;
 
-ROLLBACK;
+        RAISE NOTICE 'Transaction committed: rented % copies.', requested;
+
+    ELSE
+
+        -- Копий недостаточно → выводим сообщение и НЕ выполняем изменения
+        RAISE NOTICE 'Transaction rolled back: only % available, but % requested.',
+                     available, requested;
+
+        -- Исключение НЕ вызываем
+
+    END IF;
+
+END $$;
 
 3. Demonstration of Isolation Levels 
     • Scenario: Show the effects of different isolation levels in concurrent 
@@ -190,5 +214,5 @@ WHERE customer_id = 201;
 
 COMMIT;
 
--- mac os : sudo /Library/PostgreSQL/15/bin/pg_ctl restart -D /Library/PostgreSQL/15/data
+-- mac os : sudo /Library/PostgreSQL/17/bin/pg_ctl restart -D /Library/PostgreSQL/17/data
 
